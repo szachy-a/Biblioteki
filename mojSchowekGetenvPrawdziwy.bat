@@ -1,0 +1,1 @@
+echo %MOJSCHOWEK% >D:/tempy/mojschoweklib.txt
