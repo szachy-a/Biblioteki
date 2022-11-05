@@ -185,12 +185,8 @@ class SpecjalnaStala:
         if self.spkod == co.spkod:
             return True
         return False
-    def __ne__(self, co):
-        if type(self) == type(co):
-            return False
-        if self.spkod != co.spkod:
-            return True
-        return False
+    def __hash__(self):
+        return self.spkod
 
 def _kody():
     i = 0
@@ -242,3 +238,6 @@ def haszowanieLacznieZeZmiennymiElementami(cls):
         return wartosc
     cls.__hash__ = __hash__
     return cls
+
+def oneTimeGen(f):
+    return f()
