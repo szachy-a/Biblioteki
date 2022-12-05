@@ -20,11 +20,10 @@ class Kontroler:
     pass
 
 class PgJoystick(Kontroler):
-    def __init__(self, drazki, przyciski, stopniowane, daneJoystickow):
+    def __init__(self, drazki, przyciski, stopniowane, daneJoystickow={}):
         global j
         j = pygame.joystick.Joystick(next(_joys))
         self.drazki = []
-        wykorzystane = {AXIS:0, BUTTON:0, HAT:0}
         for i, (t, dInfo) in enumerate(drazki):
             if t == DOMYSLNE:
                 try:
@@ -35,7 +34,7 @@ class PgJoystick(Kontroler):
                     except KeyError:
                         raise e
                 if info['drazki'][i][0] not in [AXIS, BUTTON, HAT]:
-                    raise ValueError(f'Niepoprawny typ drążka {t!r}')
+                    raise ValueError(f'Niepoprawny typ drążka')
                 t = info['drazki'][i][0]
                 if info['drazki'][i][1] is not None:
                     dInfo = info['drazki'][i][1]
@@ -46,6 +45,52 @@ class PgJoystick(Kontroler):
                 self.drazki.append(DrazekZButton(j, *dInfo))
             elif t == HAT:
                 self.drazki.append(DrazekZHat(j, dInfo))
+
+        self.przyciski = []
+        for i, (t, bInfo) in enumerate(przyciski):
+            if t == DOMYSLNE:
+                try:
+                    info = daneJoystickow[j.get_name()]
+                except KeyError as e:
+                    try:
+                        info = daneJoystickow[DOMYSLNE]
+                    except KeyError:
+                        raise e
+                if info['przyciski'][i][0] not in [AXIS, BUTTON]:
+                    raise ValueError(f'Niepoprawny typ przycisku')
+                t = info['przyciski'][i][0]
+                if info['przyciski'][i][1] is not None:
+                    bInfo = info['przyciski'][i][1]
+
+            if t == AXIS:
+                self.przyciski.append(PrzyciskZAxis(j, bInfo))
+            elif t == BUTTON:
+                self.przyciski.append(PrzyciskZButton(j, bInfo))
+
+        self.stopniowane = []
+        for i, (t, sInfo) in enumerate(stopniowane):
+            if t == DOMYSLNE:
+                try:
+                    info = daneJoystickow[j.get_name()]
+                except KeyError as e:
+                    try:
+                        info = daneJoystickow[DOMYSLNE]
+                    except KeyError:
+                        raise e
+                if info['stopniowane'][i][0] not in [AXIS, BUTTON]:
+                    raise ValueError(f'Niepoprawny typ stopniowanego')
+                t = info['stopniowane'][i][0]
+                if info['stopniowane'][i][1] is not None:
+                    sInfo = info['stopniowane'][i][1]
+
+            if t == AXIS:
+                self.przyciski.append(StopniowaneZAxis(j, sInfo))
+            elif t == BUTTON:
+                self.przyciski.append(StopniowaneZButton(j, sInfo))
+
+class PgKeyboard(Kontroler):
+    def __init__(self, drazki, przyciski, stopniowane):
+        raise NotImplementedError('Nie zaimplementowano')
 
 class Drazek(abc.ABC):
     @property
@@ -106,3 +151,47 @@ class DrazekZHat(Drazek):
     @property
     def side(self):
         return (self.x, self.y)
+
+class Przycisk(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def pressed(self) -> bool:
+        pass
+
+class PrzyciskZAxis(Przycisk):
+    def __init__(self, j, a):
+        self.__j = j
+        self.__a = a
+    @property
+    def pressed(self):
+        return self.__j.get_axis(self.__a) > 0.7
+
+class PrzyciskZButton(Przycisk):
+    def __init__(self, j, b):
+        self.__j = j
+        self.__b = b
+    @property
+    def pressed(self):
+        return self.__j.get_button(self.__b)
+
+class Stopniowane(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def value(self) -> float:
+        pass
+
+class StopniowaneZAxis(Stopniowane):
+    def __init__(self, j, a):
+        self.__j = j
+        self.__a = a
+    @property
+    def value(self):
+        return self.__j.get_axis(self.__a)
+
+class StopniowaneZButton(Stopniowane):
+    def __init__(self, j, b):
+        self.__j = j
+        self.__b = b
+    @property
+    def value(self):
+        return float(self.__j.get_button(self.__b))

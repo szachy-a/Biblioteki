@@ -13,6 +13,6 @@ for _attr in ['BLACK', 'BLUE', 'CYAN', 'GREEN', 'LIGHTBLACK_EX', 'LIGHTBLUE_EX',
         setattr(colorama.Back, _attr, '')
 
 for _attr in ['BRIGHT', 'DIM', 'NORMAL', 'RESET_ALL']:
-    setattr(colorama.Style, _attr)
+    setattr(colorama.Style, _attr, '')
 
 del _attr

@@ -196,7 +196,7 @@ def _kody():
 
 _kody = _kody()
 
-class FrozenDict(_abc.Sequence):
+class FrozenDict(_abc.Mapping):
     def __init__(self, *args, **kwargs):
         self.__dict = dict(*args, **kwargs)
     def __getitem__(self, key):
@@ -216,28 +216,15 @@ def haszowanie(cls):
     cls.__hash__ = __hash__
     return cls
 
-@haszowanie
-class _ConstDict(dict):
-    __slots__ = () # w razie czego
-    @property
-    def __dict__(self):
-        return self
-
-def haszowanieLacznieZeZmiennymiElementami(cls):
-    '''Dodaje obsługę haszowania opartą na haszach instancji do klasy. Działa z atrybutami zmiennymi.'''
-    def __hash__(obj):
-        wartosc = 0
-        for attr in obj.__dict__.items():
-            if isinstance(attr[1], _abc.MutableSequence):
-                attr = (attr[0], tuple(attr[1]))
-            elif isinstance(attr[1], _abc.MutableMapping):
-                attr = (attr[0], _ConstDict(attr[1]))
-            elif isinstance(attr[1], _abc.MutableSet):
-                attr = (attr[0], frozenset(attr[1]))
-            wartosc ^= hash(attr)
-        return wartosc
-    cls.__hash__ = __hash__
-    return cls
-
 def oneTimeGen(f):
     return f()
+
+class IntConsts:
+    def __init__(self, *args):
+        for i, n in enumerate(args):
+            setattr(self, n, i)
+    def __setattr__(self, attr, value):
+        if hasattr(self, attr):
+            raise TypeError('Nie można przypisywać do const')
+        else:
+            super().__setattr__(attr, value)
