@@ -3,6 +3,7 @@ _SHELL = True
 import sys
 import msvcrt
 import cursor
+from ctypes import windll
 
 _CLEAR = '\033[2J'
 _MOVE_DOWN = '\033[B'
@@ -47,12 +48,15 @@ def getKey():
                 return RIGHT
             case _:
                 return chr(0x2700 + k[0])
-    elif k == '\0':
+    elif k == b'\0':
         match k := msvcrt.getch():
             case b'\0':
                 return '\0'
             case _:
                 return chr(0x3400 + k[0])
+    elif k == b'\3':
+        showCursor()
+        raise KeyboardInterrupt
     else:
         return k.decode('852') # Dla języka polskiego
 
@@ -65,7 +69,10 @@ def showCursor():
 def skipGetKey():
     msvcrt.ungetch(b'\0')
     msvcrt.ungetch(b'\0')
-        
+
+k = windll.kernel32
+k.SetConsoleMode(k.GetStdHandle(-11), 7)
+del k
 print(_RESET_FORMAT + _CLEAR, end='', file=sys.__stdout__)
 sys.__stdout__.flush()
 
