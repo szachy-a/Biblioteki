@@ -25,7 +25,7 @@ class Bitmapa:
         else:
             raise ValueError('Nieznany typ bitmapy')
         wym = f.readline()
-        wym = wym[:-1].decode(encoding='ansi')
+        wym = wym[:-1].decode(encoding='ascii')
         wym = tuple(map(int, wym.split('x')))
         self.sze, self.wys = wym
         self.zawartosc = []
@@ -55,9 +55,11 @@ class Bitmapa:
         _pygame
         def naSurface(self):
             surf = _pygame.Surface((self.sze, self.wys), flags=_pygame.SRCALPHA)
+            surf.lock()
             for rzad, y in zip(self.zawartosc, range(len(self.zawartosc))):
                 for pole, x in zip(rzad, range(len(rzad))):
                     surf.set_at((x, y), pole)
+            surf.unlock()
             return surf
     except NameError:
         pass
