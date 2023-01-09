@@ -228,3 +228,5 @@ class IntConsts:
             raise TypeError('Nie można przypisywać do const')
         else:
             super().__setattr__(attr, value)
+
+KOLORY_CGA = tuple(sorted({(int(r * i), int(g * i), int(b * i)) for r in (0, 127.5) for g in (0, 127.5) for b in (0, 127.5) for i in (1, 2)}))
