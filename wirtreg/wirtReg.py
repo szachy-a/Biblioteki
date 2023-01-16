@@ -16,7 +16,15 @@ LONG_BITS = 32
 SHORT_BITS = 16
 BYTE_BITS = 8
 
-class Bit64:
+class _Reg:
+    def __repr__(self):
+        import wirtreg.moje
+        for name, value in vars(wirtreg.moje).items():
+            if value is self:
+                return '<' + name + '>'
+        return super().__repr__()
+
+class Bit64(_Reg):
     def __init__(self):
         self.__v = 0
     def get(self):
@@ -24,7 +32,7 @@ class Bit64:
     def set(self, v):
         self.__v = (v & LONGLONG_MAX)
 
-class Bit32:
+class Bit32(_Reg):
     def __init__(self, bit64, waznosc):
         self.__bit64 = bit64
         self.waznosc = waznosc
@@ -47,7 +55,7 @@ class Bit32:
         else:
             raise Exception('Nieprawidłowa ważność')
 
-class Bit16:
+class Bit16(_Reg):
     def __init__(self, bit32, waznosc):
         self.__bit32 = bit32
         self.waznosc = waznosc
@@ -70,7 +78,7 @@ class Bit16:
         else:
             raise Exception('Nieprawidłowa ważność')
 
-class Bit8:
+class Bit8(_Reg):
     def __init__(self, bit16, waznosc):
         self.__bit16 = bit16
         self.waznosc = waznosc
@@ -93,7 +101,7 @@ class Bit8:
         else:
             raise Exception('Nieprawidłowa ważność')
 
-class Bit1:
+class Bit1(_Reg):
     def __init__(self, bit8, waznosc):
         self.__bit8 = bit8
         self.waznosc = waznosc
