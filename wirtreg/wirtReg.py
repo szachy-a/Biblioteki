@@ -12,9 +12,12 @@ LONG_MAX = 0xFFFFFFFF
 SHORT_MAX = 0xFFFF
 BYTE_MAX = 0xFF
 
+LONGLONG_BITS = 64
 LONG_BITS = 32
 SHORT_BITS = 16
 BYTE_BITS = 8
+
+_MAX = {LONGLONG_BITS:LONGLONG_MAX, LONG_BITS:LONG_MAX, SHORT_BITS:SHORT_MAX, BYTE_BITS:BYTE_MAX}
 
 class _Reg:
     def __repr__(self):
@@ -23,6 +26,17 @@ class _Reg:
             if value is self:
                 return '<' + name + '>'
         return super().__repr__()
+    def getSigned(self):
+        if type(self).__module__ == _Reg.__module__ and type(self).__name__[:3] == 'Reg':
+            bits = int(type(self).__name__[3:])
+            v = self.get()
+            if (v >> (bits - 1)):
+                v = -v
+                v = v & _MAX[bits]
+                v = -v
+            return v
+        else:
+            raise TypeError('To nie jest poprawny rejestr')
 
 class Bit64(_Reg):
     def __init__(self):
