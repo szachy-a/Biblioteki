@@ -229,4 +229,13 @@ class IntConsts:
         else:
             super().__setattr__(attr, value)
 
+def zakazDziedziczenia(cls):
+    @classmethod
+    def initSubclass(cls2, **kwargs):
+        raise TypeError('Nie można dziedziczyć z tej klasy')
+    if not isinstance(cls, type):
+        raise TypeError(f'zakazDziedziczenia pobiera klasę, nie {cls}')
+    cls.__init_subclass__ = initSubclass
+    return cls
+
 KOLORY_CGA = tuple(sorted({(int(r * i), int(g * i), int(b * i)) for r in (0, 127.5) for g in (0, 127.5) for b in (0, 127.5) for i in (1, 2)}))
