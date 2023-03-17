@@ -70,10 +70,13 @@ def skipGetKey():
     msvcrt.ungetch(b'\0')
     msvcrt.ungetch(b'\0')
 
+def clearScreen():
+    print(_RESET_FORMAT + _CLEAR, end='', file=sys.__stdout__)
+
 k = windll.kernel32
 k.SetConsoleMode(k.GetStdHandle(-11), 7)
 del k
-print(_RESET_FORMAT + _CLEAR, end='', file=sys.__stdout__)
+clearScreen()
 sys.__stdout__.flush()
 
 if __name__ == '__main__':
