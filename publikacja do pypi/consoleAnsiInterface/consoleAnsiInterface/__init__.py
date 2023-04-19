@@ -13,10 +13,10 @@ _FG_24 = '\033[38;2;%d;%d;%dm'
 _BG_24 = '\033[48;2;%d;%d;%dm'
 _RESET_FORMAT = '\033[0m'
 
-UP = '🡡'
-DOWN = '🡣'
-LEFT = '🡠'
-RIGHT = '🡢'
+UP = '❈'
+DOWN = '❐'
+LEFT = '❋'
+RIGHT = '❍'
 
 class Window:
     def __init__(self, x, y):
@@ -34,22 +34,18 @@ class Window:
 def showAll():
     sys.__stdout__.flush()
 
+_buf = []
 def getKey():
-    k = msvcrt.getch()
+    def getch():
+        try:
+            return _buf.pop(0)
+        except IndexError:
+            return msvcrt.getch()
+    k = getch()
     if k == b'\xe0':
-        match k := msvcrt.getch():
-            case b'H':
-                return UP
-            case b'P':
-                return DOWN
-            case b'K':
-                return LEFT
-            case b'M':
-                return RIGHT
-            case _:
-                return chr(0x2700 + k[0])
+        return chr(0x2700 + getch()[0])
     elif k == b'\0':
-        match k := msvcrt.getch():
+        match k := getch():
             case b'\0':
                 return '\0'
             case _:
@@ -69,6 +65,20 @@ def showCursor():
 def skipGetKey():
     msvcrt.ungetch(b'\0')
     msvcrt.ungetch(b'\0')
+
+def unGetKey(key):
+    try:
+        _buf.append(key.encode('852'))
+    except UnicodeEncodeError:
+        match ord(key) >> 8:
+            case 0x27:
+                _buf.append(b'\xe0')
+                _buf.append(bytes([ord(key) & 0xff]))
+            case 0x34:
+                _buf.append(b'\0')
+                _buf.append(bytes([ord(key) & 0xff]))
+            case _:
+                raise ValueError(f'Niedozwolony znak "{key}" ({hex(ord(key))})') from None
 
 def clearScreen():
     print(_RESET_FORMAT + _CLEAR, end='', file=sys.__stdout__)
