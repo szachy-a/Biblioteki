@@ -127,3 +127,8 @@ class TextInput(WithFg, WithBg, WithFont):
                 self.content = self.content[:-1]
             else:
                 self.content += event.unicode
+
+class WidgetGroup(list[Widget]):
+    def processEvent(self, event : pygame.event.Event):
+        for elem in self:
+            elem.processEvent(event)
