@@ -7,8 +7,6 @@ import sys as _sys
 import io as _io
 from collections import abc as _abc
 
-import unicodedata
-
 class Struktura:
     def __init__(self, **kwargs):
         self._zawartosc = list(kwargs.keys())
