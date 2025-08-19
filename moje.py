@@ -6,6 +6,7 @@ import os as _os
 import sys as _sys
 import io as _io
 from collections import abc as _abc
+import threading as _threading
 
 import unicodedata
 
@@ -239,5 +240,29 @@ def zakazDziedziczenia(cls):
         raise TypeError(f'zakazDziedziczenia pobiera klasę, nie {cls}')
     cls.__init_subclass__ = initSubclass
     return cls
+
+class CzekanieNaWydarzenie:
+    def __init__(self):
+        self.__moznaIsc = False
+        self.__czyKtosCzeka = False
+        self.__lock = _threading.Lock()
+    def czyKtosCzeka(self):
+        with self.__lock:
+            return self.__czyKtosCzeka
+    def czekaj(self):
+        with self.__lock:
+            if self.__moznaIsc:
+                return
+            self.__czyKtosCzeka = True
+        while not self.__moznaIsc:
+            pass
+        with self.__lock:
+            self.__czyKtosCzeka = False
+            self.__moznaIsc = False
+    def moznaIsc(self):
+        with self.__lock:
+            if self.__moznaIsc:
+                raise RuntimeError('Nie można dwa razy nadać eventu bez odbioru')
+            self.__moznaIsc = True
 
 KOLORY_CGA = tuple(sorted({(int(r * i), int(g * i), int(b * i)) for r in (0, 127.5) for g in (0, 127.5) for b in (0, 127.5) for i in (1, 2)}))
