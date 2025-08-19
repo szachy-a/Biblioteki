@@ -1,5 +1,8 @@
 import pygame
 
+if __name__ == '__main__':
+    pygame.init()
+
 import abc
 from collections.abc import Callable
 
@@ -18,8 +21,10 @@ class Widget(abc.ABC):
     @_surf.setter
     def _surf(self, surf : pygame.Surface):
         self.__surf = surf
-        self._rePlace()
+        self.rePlace()
     def __init__(self, **kwargs):
+        self.__surf = pygame.Surface((1, 1))
+        self.place(0, 0)
         self.config(**kwargs)
     @abc.abstractmethod
     def config(self, **kwargs):
@@ -41,48 +46,48 @@ class Widget(abc.ABC):
 
 class WithFg(Widget):
     def __init__(self, fg=(0, 0, 0), **kwargs):
-        super().__init__(self, fg=fg, **kwargs)
-    def config(self, fg : tuple[int, int, int]=None, **kwargs):
-        super().__init__(self, fg=fg, **kwargs)
-        if fg is not None:
-            self._fg = fg
+        super().__init__(fg=fg, **kwargs)
+    def config(self, **kwargs):
+        super().config(**kwargs)
+        if 'fg' in kwargs:
+            self._fg = kwargs['fg']
 
 class WithBg(Widget):
     def __init__(self, bg=(255, 255, 255), **kwargs):
-        super().__init__(self, bg=bg, **kwargs)
-    def config(self, bg : tuple[int, int, int]=None, **kwargs):
-        super().__init__(self, bg=bg, **kwargs)
-        if bg is not None:
-            self._bg = bg
+        super().__init__(bg=bg, **kwargs)
+    def config(self, **kwargs):
+        super().config(**kwargs)
+        if 'bg' in kwargs:
+            self._bg = kwargs['bg']
 
 class WithFont(Widget):
     def __init__(self, font : pygame.font.Font=_DEFAULT_FONT, **kwargs):
-        super().__init__(self, font=font, **kwargs)
-    def config(self, font : pygame.font.Font=None, **kwargs):
-        super().config(self, font=font, **kwargs)
-        if font is not None:
-            self._font = font
+        super().__init__(font=font, **kwargs)
+    def config(self, **kwargs):
+        super().config(**kwargs)
+        if 'font' in kwargs:
+            self._font = kwargs['font']
 
 class Label(WithBg):
     pass
 
 class TextLabel(Label, WithFg, WithFont):
-    def config(self, text : str=None, **kwargs):
-        super().config(text=text, **kwargs)
-        if text is not None:
-            self._surf = self._font.render(text, True, self._fg, self._bg)
+    def config(self, **kwargs):
+        super().config(**kwargs)
+        if 'text' in kwargs:
+            self._surf = self._font.render(kwargs['text'], True, self._fg, self._bg)
 
 class ImageLabel(Label):
-    def config(self, image : pygame.Surface=None, **kwargs):
-        super().config(image=image, **kwargs)
-        if image is not None:
-            self._surf = image
+    def config(self, **kwargs):
+        super().config(**kwargs)
+        if 'image' in kwargs:
+            self._surf = kwargs['image']
 
 class Button(Label):
-    def config(self, command : Callable=None, **kwargs):
-        super().config(self, command=command, **kwargs)
-        if command is not None:
-            self._command = command
+    def config(self, **kwargs):
+        super().config(**kwargs)
+        if 'command' in kwargs:
+            self._command = kwargs['command']
     def processEvent(self, event):
         super().processEvent(event)
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -104,11 +109,11 @@ class TextInput(WithFg, WithBg, WithFont):
         self.__content = value
         self.reDraw()
     def __init__(self, width : int=_DEFAULT_FONT.render('A' * 20, True, (0, 0, 0)).get_width(), **kwargs):
-        super().__init__(self, width=width, **kwargs)
-    def config(self, width : int=None, **kwargs):
-        if width is not None:
-            self._width = width
-        super().config(self, width=width, **kwargs)
+        super().__init__(width=width, **kwargs)
+    def config(self, **kwargs):
+        if 'width' in kwargs:
+            self._width = kwargs['width']
+        super().config(**kwargs)
         self.reDraw()
     def reDraw(self):
         textSurf = self._font.render(self.content, True, self._fg, self._bg)
@@ -132,3 +137,6 @@ class WidgetGroup(list[Widget]):
     def processEvent(self, event : pygame.event.Event):
         for elem in self:
             elem.processEvent(event)
+    def show(self, screen : pygame.Surface):
+        for elem in self:
+            screen.blit(elem._surf, elem._rect)
